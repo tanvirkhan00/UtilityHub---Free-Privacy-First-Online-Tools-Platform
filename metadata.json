@@ -1,0 +1,6 @@
+{
+  "name": "UtilityHub – Free Online Tools Platform",
+  "description": "Convert, compress, edit, generate, and optimize files and text with fast, private, client-side online tools including our signature Fiverr Safety Checker.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

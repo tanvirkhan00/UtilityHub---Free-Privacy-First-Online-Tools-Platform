@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UtilityHub – Free Online Tools Platform</title>
+    <meta name="description" content="Convert, compress, edit, generate, and optimize files and text with fast, private, client-side online tools including our signature Fiverr Safety Checker." />
+    <meta name="keywords" content="free online tools, pdf merger, image compressor, fiverr safety checker, qr code generator, markdown previewer, text cleaner" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="UtilityHub – Free Online Tools Platform" />
+    <meta property="og:description" content="Convert, compress, edit, generate, and optimize files and text with fast, private, client-side online tools." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="UtilityHub" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="UtilityHub – Free Online Tools Platform" />
+    <meta name="twitter:description" content="Convert, compress, edit, generate, and optimize files and text with fast, private, client-side online tools." />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "UtilityHub",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "All",
+      "description": "Powerful, 100% private, free online developer and productivity utilities, PDF tools, image compressors, social media resizers, and freelance compliance scanners.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    </script>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('utilityhub-theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (saved === 'dark' || (!saved && prefersDark)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
