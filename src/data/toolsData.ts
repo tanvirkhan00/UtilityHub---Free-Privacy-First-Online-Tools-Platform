@@ -432,31 +432,31 @@ export const TOOLS: ToolMeta[] = [
   // Creator & Social Media Tools
   {
     id: 'typing-speed-game',
-    name: 'TypeRush: Typing Speed Practice Game',
+    name: 'TypeRush: Turbo Grand Prix & Space Blaster Typing Game',
     slug: 'typing-speed-game',
     category: 'creator',
     iconName: 'Gamepad2',
     badge: 'Featured Game',
-    description: 'Level up your keyboard WPM speed through interactive arcade games, speed sprints, and code typing battles.',
-    longDescription: 'A gamified typing velocity trainer featuring Arcade Falling Words defense, 15s/30s/60s Speed Sprints, Developer Code syntax challenges, real-time WPM & accuracy meters, synthetic mechanical keyboard click audio, and on-screen keyboard visualizers.',
-    keywords: ['typing speed game', 'keyboard practice', 'type racer', 'monkeytype clone', 'wpm test game', 'typing speed test', 'typing practice online', 'code typing test'],
+    description: 'Race live AI rivals in Turbo Grand Prix car battle, defend the cosmos in Galaxy Space Blaster, and test WPM speed in real-time.',
+    longDescription: 'The world’s most popular, addictive typing game formats inspired by TypeRacer and Space Invaders! Control your race car with nitro boosts, blast enemy space drones with laser cannons, or test your speed in classic timed sprints.',
+    keywords: ['typing speed game', 'typeracer game', 'nitro type', 'space blaster typing', 'car racing typing test', 'wpm race battle', 'keyboard typing practice', 'typing speed test'],
     features: [
-      'Arcade Falling Words mode: defend against raining words with combo streaks and 3 lives',
-      'Speed Sprint test with custom 15s, 30s, and 60s bursts and live WPM/Accuracy readouts',
-      'Code Ninja mode: train typing muscle memory on real JavaScript, Python, and React code syntax',
-      'Synthesized mechanical keyboard switch audio clicks with zero latency (Web Audio API)',
-      'On-screen QWERTY mechanical keyboard visualizer with active and target key indicators',
-      'Performance rank tiers (Novice Turtle to Typing God) with personal best high score saving'
+      'Turbo Grand Prix car racing battle with 3 AI competitors (Rookie to Legend)',
+      'Galaxy Space Blaster defender mode with laser cannons, shields, and alien waves',
+      'Nitro Boost activation on 5+ streak words with authentic audio acceleration',
+      '15s/30s/60s Speed Sprints and Developer Code Ninja syntax modes',
+      'Realistic mechanical keyboard clicks, engine roar, and laser effects via Web Audio API',
+      'On-screen QWERTY mechanical key guide and personal best WPM record saving'
     ],
     instructions: [
-      { step: 1, title: 'Choose game mode', desc: 'Select Speed Sprint, Arcade Falling Words, or Code Ninja mode.' },
-      { step: 2, title: 'Start typing', desc: 'Focus on the prompt words and type with rhythm and accuracy.' },
-      { step: 3, title: 'Earn streaks and badges', desc: 'Chain accurate words together for combo bonuses and level up your WPM rank.' },
-      { step: 4, title: 'Check stats & share', desc: 'Inspect your Net WPM, accuracy, and copy your verified score card.' }
+      { step: 1, title: 'Choose your game mode', desc: 'Select Turbo Grand Prix car racing, Galaxy Space Blaster, or timed Speed Sprint.' },
+      { step: 2, title: 'Type prompt words', desc: 'Type each word smoothly and hit Spacebar to accelerate your car or fire lasers.' },
+      { step: 3, title: 'Trigger combos and boosts', desc: 'Chain consecutive words without errors to unleash high-speed nitro flames or score multipliers.' },
+      { step: 4, title: 'Win trophies and rank up', desc: 'Claim 1st place on the podium or defend all 4 waves to achieve typing mastery.' }
     ],
     faqs: [
-      { question: 'What is a good typing speed (WPM)?', answer: 'The average typing speed is around 40 WPM. Professional developers and typists often reach 70-90+ WPM. With consistent practice on TypeRush, you can increase your speed by 20-30 WPM within two weeks!' },
-      { question: 'Does the game work offline?', answer: 'Yes! All word banks, timer algorithms, and sound generators run 100% locally in your browser memory.' }
+      { question: 'Why is the car racing format so popular?', answer: 'Competing against moving cars provides immediate visual motivation and dopamine, allowing you to intuitively increase typing cadence without looking down at the keyboard!' },
+      { question: 'Can I play offline without internet?', answer: 'Yes! All race physics, competitor curves, and sound effects execute 100% locally in your browser.' }
     ],
     clientSideOnly: true
   },

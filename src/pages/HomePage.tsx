@@ -110,103 +110,100 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Highlighted Feature Banner: TypeRush Typing Speed Game */}
-      <section className="max-w-5xl mx-auto">
-        <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white overflow-hidden shadow-2xl border-2 border-amber-500/50 group hover:border-amber-400 transition-all">
-          {/* Animated decorative glow */}
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-amber-500/20 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
-          <div className="absolute bottom-0 left-1/3 -mb-10 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div className="lg:col-span-8 space-y-3.5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-rose-500/20 border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-xs">
-                <Gamepad2 className="w-4 h-4 text-amber-400 animate-bounce" />
-                <span>Featured Interactive Game • Boost Your WPM Speed</span>~
+      {/* Featured Utilities Grid (TypeRush Game & Fiverr Safety) */}
+      <section className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Card 1: TypeRush Game */}
+          <div className="relative rounded-3xl p-6 sm:p-7 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white overflow-hidden shadow-lg border border-indigo-500/30 flex flex-col justify-between group hover:border-amber-400/60 transition-all">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/15 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div className="relative z-10 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-bold uppercase tracking-wider">
+                  <Gamepad2 className="w-3.5 h-3.5" />
+                  Interactive Game
+                </span>
+                <span className="text-[11px] font-mono text-indigo-300">
+                  Turbo Race • Sprints
+                </span>
               </div>
 
-              <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
-                TypeRush: Keyboard Typing Speed Practice Game
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                TypeRush: Grand Prix & Space Blaster
               </h2>
 
-              <p className="text-xs sm:text-sm text-indigo-200/90 leading-relaxed max-w-xl">
-                Practice touch typing through interactive gameplay! Featuring Arcade Falling Words defense, 15s/30s/60s Speed Sprints, Developer Code Ninja mode, and real-time mechanical keyboard sound effects.
+              <p className="text-xs text-indigo-200/90 leading-relaxed">
+                Race live cars against AI rivals on the Grand Prix track or defend the galaxy with laser cannons in Space Blaster!
               </p>
 
-              {/* Game highlights */}
-              <div className="flex flex-wrap gap-2 pt-1 text-[11px] font-bold text-indigo-100">
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-amber-400" /> Arcade Word Rain
-                </span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-rose-400" /> Speed Sprint (15s/30s/60s)
-                </span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
-                  <Code className="w-3.5 h-3.5 text-sky-400" /> Developer Code Typer
-                </span>
-                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
-                  <Keyboard className="w-3.5 h-3.5 text-emerald-400" /> Mechanical Click Audio
-                </span>
+              <div className="flex flex-wrap gap-1.5 pt-1 text-[11px] font-medium text-indigo-200">
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Live Car Race Track</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Galaxy Space Blaster</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Speedometer & Podium</span>
               </div>
             </div>
 
-            <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col items-center lg:items-end justify-center gap-3">
+            <div className="relative z-10 pt-5 mt-4 border-t border-indigo-500/20 flex items-center justify-between">
+              <span className="text-xs font-mono text-amber-400 font-semibold flex items-center gap-1">
+                <Trophy className="w-3.5 h-3.5" /> Ranks: Turtle to God
+              </span>
               <Link
                 to="/tool/typing-speed-game"
-                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-rose-500 text-slate-950 font-black text-sm hover:scale-105 transition-all shadow-xl shadow-amber-500/25 inline-flex items-center justify-center gap-2.5 group cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-rose-500 text-slate-950 font-bold text-xs hover:scale-105 transition-all shadow-md inline-flex items-center gap-1.5 group cursor-pointer"
               >
-                <span>Play Typing Game Now</span>
-                <ArrowRight className="w-4 h-4 text-slate-950 group-hover:translate-x-1.5 transition-transform" />
+                <span>Play Game</span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-950 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <div className="text-[11px] font-mono text-indigo-300/80 flex items-center gap-1">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" /> Rank from Turtle to Typing God
-              </div>
             </div>
           </div>
+
+          {/* Card 2: Fiverr Safety Checker */}
+          <div className="relative rounded-3xl p-6 sm:p-7 bg-gradient-to-br from-slate-950 via-teal-950 to-slate-900 text-white overflow-hidden shadow-lg border border-emerald-500/30 flex flex-col justify-between group hover:border-emerald-400/60 transition-all">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div className="relative z-10 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold uppercase tracking-wider">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Freelance Protection
+                </span>
+                <span className="text-[11px] font-mono text-emerald-300">
+                  Policy Scanner
+                </span>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                Fiverr Message Safety Checker
+              </h2>
+
+              <p className="text-xs text-emerald-100/90 leading-relaxed">
+                Scan messages for off-platform contact leaks, payment traps, and Terms of Service strikes before hitting send.
+              </p>
+
+              <div className="flex flex-wrap gap-1.5 pt-1 text-[11px] font-medium text-emerald-200">
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ WhatsApp/Skype Alert</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Direct Payment Traps</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Safe Rewrites</span>
+              </div>
+            </div>
+
+            <div className="relative z-10 pt-5 mt-4 border-t border-emerald-500/20 flex items-center justify-between">
+              <span className="text-xs font-mono text-emerald-400 font-semibold flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" /> 100% Client-Side
+              </span>
+              <Link
+                to="/tool/fiverr-safety-checker"
+                className="px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 hover:scale-105 transition-all shadow-md inline-flex items-center gap-1.5 group cursor-pointer"
+              >
+                <span>Launch Scanner</span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-950 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          </div>
+
         </div>
       </section>
-
-      {/* Signature Feature Banner: Fiverr Safety Checker */}
-      {fiverrTool && (
-        <section className="max-w-5xl mx-auto">
-          <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 text-white overflow-hidden shadow-lg border border-emerald-500/30">
-            {/* Background Glow Deco */}
-            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-              <div className="lg:col-span-8 space-y-3">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
-                  <Flame className="w-3.5 h-3.5 text-amber-300" />
-                  Featured Freelancer Utility
-                </div>
-                
-                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                  Fiverr Communication Safety Checker
-                </h2>
-
-                <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed max-w-xl">
-                  Prevent accidental Terms of Service violations before hitting send. Real-time scanning for off-platform contact sharing, payment requests, and feedback manipulation traps.
-                </p>
-
-                <div className="flex flex-wrap gap-2 pt-1 text-[11px] font-medium text-emerald-100">
-                  <span className="px-2.5 py-0.5 rounded-full bg-black/20">✓ WhatsApp / Skype Detection</span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-black/20">✓ PayPal & Off-Site Escrow</span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-black/20">✓ Compliant Message Templates</span>
-                </div>
-              </div>
-
-              <div className="lg:col-span-4 flex lg:justify-end">
-                <Link
-                  to="/tool/fiverr-safety-checker"
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white text-slate-900 font-bold text-sm hover:bg-emerald-50 transition-all shadow-md inline-flex items-center justify-center gap-2 group cursor-pointer"
-                >
-                  <span>Launch Scanner</span>
-                  <ArrowRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Category Tabs & Tool Catalog */}
       <section className="space-y-8">
