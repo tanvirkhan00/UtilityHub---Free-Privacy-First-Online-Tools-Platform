@@ -12,17 +12,27 @@ import {
   Zap, 
   Share2, 
   Check, 
-  Timer,
-  Code2,
-  BookOpen,
-  ArrowRight,
-  Flag,
-  Gauge,
-  Rocket,
-  Shield,
-  Crosshair,
-  Award,
-  ChevronRight
+  Timer, 
+  Code2, 
+  BookOpen, 
+  ArrowRight, 
+  Flag, 
+  Gauge, 
+  Rocket, 
+  Shield, 
+  Crosshair, 
+  Award, 
+  ChevronRight,
+  Plane,
+  Compass,
+  Wind,
+  ArrowUp,
+  AlertTriangle,
+  Cloud,
+  Sun,
+  Feather,
+  Star,
+  Activity
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -37,6 +47,13 @@ const COMMON_WORDS = [
   'how', 'our', 'work', 'first', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give',
   'day', 'most', 'us', 'great', 'world', 'learn', 'speed', 'focus', 'power', 'dream', 'light', 'clean',
   'smart', 'swift', 'quick', 'ninja', 'rapid', 'turbo', 'spark', 'flame', 'quest', 'react', 'code', 'logic'
+];
+
+const SKY_WORDS = [
+  'cloud', 'sky', 'float', 'glide', 'soar', 'breeze', 'altitude', 'pilot', 'horizon', 'wings', 
+  'flight', 'wind', 'thermal', 'lift', 'updraft', 'air', 'feather', 'eagle', 'falcon', 'climb', 
+  'strato', 'space', 'zenith', 'aero', 'drifter', 'beacon', 'current', 'stream', 'rocket', 'balloon',
+  'voyage', 'sailor', 'gravity', 'thrust', 'glider', 'soaring', 'azure', 'celestial', 'beacon', 'orbit'
 ];
 
 const CODE_WORDS = [
@@ -61,9 +78,11 @@ const SPACE_INVADERS_WORDS = [
   'thrust', 'hyper', 'nebula', 'sensor', 'photon', 'lunar', 'radar', 'space'
 ];
 
-type GameMode = 'racer' | 'space' | 'sprint' | 'code' | 'quote';
+type GameMode = 'racer' | 'sky' | 'space' | 'sprint' | 'code' | 'quote';
 type TimeDuration = 15 | 30 | 60;
 type RaceDifficulty = 'rookie' | 'pro' | 'legend';
+type SkyGravity = 'gentle' | 'normal' | 'storm';
+type SkyFlyer = 'glider' | 'balloon' | 'rocket' | 'falcon' | 'ufo';
 
 interface Racer {
   id: string;
@@ -84,8 +103,23 @@ interface SpaceTarget {
   type: 'drone' | 'asteroid' | 'cruiser';
 }
 
+interface SkyFlyerOption {
+  id: SkyFlyer;
+  name: string;
+  icon: string;
+  desc: string;
+}
+
+const SKY_FLYERS: SkyFlyerOption[] = [
+  { id: 'glider', name: 'Sky Paraglider', icon: '🪂', desc: 'Aerodynamic glide with lift cushions' },
+  { id: 'balloon', name: 'Hot Air Balloon', icon: '🎈', desc: 'Classic thermal air floater' },
+  { id: 'rocket', name: 'Aero Jetpack', icon: '🚀', desc: 'High-thrust dual turbo exhausts' },
+  { id: 'falcon', name: 'Golden Falcon', icon: '🦅', desc: 'Majestic bird soaring on updrafts' },
+  { id: 'ufo', name: 'Anti-Gravity Drone', icon: '🛸', desc: 'Futuristic magnetic levitation craft' },
+];
+
 export const TypingSpeedGame: React.FC = () => {
-  const [mode, setMode] = useState<GameMode>('racer');
+  const [mode, setMode] = useState<GameMode>('sky'); // Default to newly requested Sky Altitude Floater
   const [duration, setDuration] = useState<TimeDuration>(30);
   const [raceDifficulty, setRaceDifficulty] = useState<RaceDifficulty>('pro');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
@@ -106,6 +140,17 @@ export const TypingSpeedGame: React.FC = () => {
   const [correctKeystrokes, setCorrectKeystrokes] = useState<number>(0);
   const [activeKey, setActiveKey] = useState<string>('');
   const [nitroActive, setNitroActive] = useState<boolean>(false);
+
+  // CUSTOM SKY ALTITUDE FLOATER STATES
+  const [skyAltitudePct, setSkyAltitudePct] = useState<number>(55); // 0 (ground) to 100 (high stratosphere)
+  const [skyAltitudeMeters, setSkyAltitudeMeters] = useState<number>(550);
+  const [skyMaxAltitude, setSkyMaxAltitude] = useState<number>(550);
+  const [skyClimbRate, setSkyClimbRate] = useState<number>(0); // m/s climbing or falling
+  const [skyChutesLeft, setSkyChutesLeft] = useState<number>(3); // 3 emergency cushions
+  const [skyGravity, setSkyGravity] = useState<SkyGravity>('normal');
+  const [skyFlyer, setSkyFlyer] = useState<SkyFlyer>('glider');
+  const [isSkyBoosting, setIsSkyBoosting] = useState<boolean>(false);
+  const [skyFlightTimeSec, setSkyFlightTimeSec] = useState<number>(0);
 
   // TypeRacer Grand Prix states
   const [racers, setRacers] = useState<Racer[]>([
@@ -134,14 +179,18 @@ export const TypingSpeedGame: React.FC = () => {
   const [spaceHighScore, setSpaceHighScore] = useState<number>(() => {
     return parseInt(localStorage.getItem('utilityhub_typing_space_highscore') || '0', 10);
   });
+  const [skyHighScoreMeters, setSkyHighScoreMeters] = useState<number>(() => {
+    return parseInt(localStorage.getItem('utilityhub_typing_sky_max_altitude') || '0', 10);
+  });
   const [copiedShare, setCopiedShare] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const timerRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const lastDangerWarningRef = useRef<number>(0);
 
-  // Web Audio API engine click & zoom sounds
-  const playSound = (type: 'key' | 'space' | 'error' | 'nitro' | 'win' | 'laser' | 'explosion') => {
+  // Web Audio API engine click, thrusters & alert sounds
+  const playSound = (type: 'key' | 'space' | 'error' | 'nitro' | 'win' | 'laser' | 'explosion' | 'lift' | 'danger' | 'chute' | 'milestone') => {
     if (!soundEnabled) return;
     try {
       if (!audioContextRef.current) {
@@ -171,6 +220,32 @@ export const TypingSpeedGame: React.FC = () => {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
         osc.start();
         osc.stop(ctx.currentTime + 0.06);
+      } else if (type === 'lift') {
+        // Sky upward thrust whoosh
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(760, ctx.currentTime + 0.16);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.16);
+      } else if (type === 'danger') {
+        // Low altitude warning beep
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(720, ctx.currentTime);
+        gain.gain.setValueAtTime(0.07, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      } else if (type === 'chute') {
+        // Emergency parachute deployment sound
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.22);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
       } else if (type === 'laser') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(880, ctx.currentTime);
@@ -263,8 +338,20 @@ export const TypingSpeedGame: React.FC = () => {
     setNitroActive(false);
     setTimeLeft(duration);
     setLaserFiring(false);
+    lastDangerWarningRef.current = 0;
 
-    if (mode === 'space') {
+    if (mode === 'sky') {
+      // Reset Sky Altitude Floater
+      setSkyAltitudePct(55);
+      setSkyAltitudeMeters(550);
+      setSkyMaxAltitude(550);
+      setSkyClimbRate(0);
+      setSkyChutesLeft(3);
+      setIsSkyBoosting(false);
+      setSkyFlightTimeSec(0);
+      const shuffled = [...SKY_WORDS, ...COMMON_WORDS].sort(() => 0.5 - Math.random());
+      setTargetWords(shuffled.slice(0, 45));
+    } else if (mode === 'space') {
       setShields(5);
       setSpaceScore(0);
       setSpaceWave(1);
@@ -324,6 +411,17 @@ export const TypingSpeedGame: React.FC = () => {
       return finalWpm;
     });
 
+    // Save Sky Highscore (Peak Altitude)
+    if (mode === 'sky') {
+      setSkyMaxAltitude((peak) => {
+        if (peak > skyHighScoreMeters) {
+          setSkyHighScoreMeters(peak);
+          localStorage.setItem('utilityhub_typing_sky_max_altitude', peak.toString());
+        }
+        return peak;
+      });
+    }
+
     // Save Space Defender highscore
     if (mode === 'space') {
       setSpaceScore((score) => {
@@ -353,11 +451,11 @@ export const TypingSpeedGame: React.FC = () => {
         return currentRacers;
       });
     }
-  }, [highScoreWpm, mode, spaceHighScore]);
+  }, [highScoreWpm, mode, spaceHighScore, skyHighScoreMeters]);
 
   // Sprint / Duration countdown timer
   useEffect(() => {
-    if (startTime && !isGameOver && mode !== 'racer' && mode !== 'space') {
+    if (startTime && !isGameOver && mode !== 'racer' && mode !== 'space' && mode !== 'sky') {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -371,6 +469,63 @@ export const TypingSpeedGame: React.FC = () => {
     }
     return () => clearInterval(timerRef.current);
   }, [startTime, isGameOver, mode, finishRound]);
+
+  // Sky Floater: Real-time Gravity Physics & Altitude Loop
+  useEffect(() => {
+    if (mode !== 'sky' || !startTime || isGameOver) return;
+
+    const gravityTickMs = 100;
+    const gravityRate = skyGravity === 'gentle' ? 0.48 : skyGravity === 'storm' ? 1.15 : 0.76;
+
+    const interval = setInterval(() => {
+      setSkyFlightTimeSec((t) => t + 0.1);
+
+      setSkyAltitudePct((prevPct) => {
+        const nextPct = Math.max(0, prevPct - gravityRate);
+
+        // Calculate descending rate
+        const descendRate = -Math.round(gravityRate * 16);
+        setSkyClimbRate(descendRate);
+
+        // Calculate actual meters
+        const currentMeters = Math.max(0, Math.round(nextPct * 30 + 10));
+        setSkyAltitudeMeters(currentMeters);
+        setSkyMaxAltitude((prevMax) => Math.max(prevMax, currentMeters));
+
+        // Low altitude warning sound
+        if (nextPct <= 18 && nextPct > 2) {
+          const now = Date.now();
+          if (now - lastDangerWarningRef.current > 1800) {
+            lastDangerWarningRef.current = now;
+            playSound('danger');
+          }
+        }
+
+        // Ground touchdown / crash detection
+        if (nextPct <= 1) {
+          setSkyChutesLeft((chutes) => {
+            if (chutes > 1) {
+              // Deploy emergency parachute cushion back to safe 35% altitude
+              playSound('chute');
+              setTimeout(() => {
+                setSkyAltitudePct(35);
+              }, 40);
+              return chutes - 1;
+            } else {
+              // Out of emergency cushions -> round ends with touchdown
+              finishRound();
+              return 0;
+            }
+          });
+          return 0;
+        }
+
+        return nextPct;
+      });
+    }, gravityTickMs);
+
+    return () => clearInterval(interval);
+  }, [mode, startTime, isGameOver, skyGravity, finishRound]);
 
   // Race Loop: Progress AI competitors in real-time
   useEffect(() => {
@@ -480,7 +635,23 @@ export const TypingSpeedGame: React.FC = () => {
 
       if (typedWord === activeWord) {
         // Correct Word!
-        if (mode === 'space') {
+        if (mode === 'sky') {
+          // SKY FLOATER UPWARD THRUST!
+          playSound('lift');
+          setIsSkyBoosting(true);
+          setTimeout(() => setIsSkyBoosting(false), 350);
+
+          // Give dynamic upward lift based on streak
+          const boostLift = 8.5 + Math.min(8, streak * 1.2);
+          setSkyAltitudePct((prev) => {
+            const newPct = Math.min(97, prev + boostLift);
+            const newMeters = Math.round(newPct * 30 + 10);
+            setSkyAltitudeMeters(newMeters);
+            setSkyMaxAltitude((prevMax) => Math.max(prevMax, newMeters));
+            setSkyClimbRate(Math.round(boostLift * 3.8)); // positive climbing velocity
+            return newPct;
+          });
+        } else if (mode === 'space') {
           playSound('laser');
           setLaserFiring(true);
           setTimeout(() => {
@@ -514,6 +685,12 @@ export const TypingSpeedGame: React.FC = () => {
         setCurrentWordIndex(nextIndex);
         setCurrentInput('');
 
+        // If in Sky mode and getting near end of words list, seamlessly append more sky words!
+        if (mode === 'sky' && nextIndex >= targetWords.length - 6) {
+          const moreWords = [...SKY_WORDS, ...COMMON_WORDS].sort(() => 0.5 - Math.random()).slice(0, 30);
+          setTargetWords((prev) => [...prev, ...moreWords]);
+        }
+
         // Update player race progress
         if (mode === 'racer') {
           const totalWordsCount = targetWords.length || 30;
@@ -526,7 +703,7 @@ export const TypingSpeedGame: React.FC = () => {
           if (playerProgress >= 100 || nextIndex >= targetWords.length) {
             finishRound();
           }
-        } else if (nextIndex >= targetWords.length && mode !== 'space') {
+        } else if (nextIndex >= targetWords.length && mode !== 'space' && mode !== 'sky') {
           finishRound();
         }
       } else {
@@ -546,6 +723,10 @@ export const TypingSpeedGame: React.FC = () => {
         playSound('error');
       } else {
         setCorrectKeystrokes((prev) => prev + 1);
+        // Small micro-lift for every correct character typed in Sky mode!
+        if (mode === 'sky') {
+          setSkyAltitudePct((prev) => Math.min(97, prev + 0.6));
+        }
       }
     }
 
@@ -577,19 +758,22 @@ export const TypingSpeedGame: React.FC = () => {
   const nextChar = currentTargetChar();
 
   const getRankBadge = (wpm: number) => {
-    if (wpm >= 110) return { title: 'Typing God', emoji: '👑', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' };
-    if (wpm >= 90) return { title: 'Lightning Master', emoji: '⚡', color: 'text-violet-400 bg-violet-500/10 border-violet-500/30' };
-    if (wpm >= 70) return { title: 'Sonic Jet', emoji: '🚀', color: 'text-sky-400 bg-sky-500/10 border-sky-500/30' };
-    if (wpm >= 50) return { title: 'Road Racer', emoji: '🏎️', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' };
-    if (wpm >= 30) return { title: 'Steady Runner', emoji: '🏃', color: 'text-blue-400 bg-blue-500/10 border-blue-500/30' };
-    return { title: 'Novice Turtle', emoji: '🐢', color: 'text-slate-400 bg-slate-500/10 border-slate-500/30' };
+    if (wpm >= 110) return { title: 'Stratosphere God', emoji: '👑', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' };
+    if (wpm >= 90) return { title: 'Lightning Ace', emoji: '⚡', color: 'text-violet-400 bg-violet-500/10 border-violet-500/30' };
+    if (wpm >= 70) return { title: 'Sonic Jet Flyer', emoji: '🚀', color: 'text-sky-400 bg-sky-500/10 border-sky-500/30' };
+    if (wpm >= 50) return { title: 'Sky Glider', emoji: '🪂', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' };
+    if (wpm >= 30) return { title: 'Steady Cruiser', emoji: '🎈', color: 'text-blue-400 bg-blue-500/10 border-blue-500/30' };
+    return { title: 'Novice Drifter', emoji: '🐢', color: 'text-slate-400 bg-slate-500/10 border-slate-500/30' };
   };
 
   const rank = getRankBadge(currentWpm);
+  const activeFlyerOption = SKY_FLYERS.find(f => f.id === skyFlyer) || SKY_FLYERS[0];
 
   const shareScore = () => {
     let text = '';
-    if (mode === 'racer') {
+    if (mode === 'sky') {
+      text = `🪂 I stayed airborne in Sky Altitude Floater reaching ${skyMaxAltitude}m peak altitude at ${currentWpm} WPM! Can you keep the pointer in the sky?`;
+    } else if (mode === 'racer') {
       text = `🏎️ I raced in TypeRush Grand Prix! Finished ${playerRank === 1 ? '1st Place 🏆' : `${playerRank}th Place`} at ${currentWpm} WPM with ${accuracy}% accuracy! Can you beat my time?`;
     } else if (mode === 'space') {
       text = `🚀 I defended the galaxy in Space Blaster with ${spaceScore} points at ${currentWpm} WPM! Can you top my highscore?`;
@@ -611,20 +795,20 @@ export const TypingSpeedGame: React.FC = () => {
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
           
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-rose-500 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20 font-black text-2xl">
-              {mode === 'space' ? '🚀' : mode === 'racer' ? '🏎️' : '⚡'}
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-400 via-indigo-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/20 font-black text-2xl">
+              {mode === 'sky' ? activeFlyerOption.icon : mode === 'space' ? '🚀' : mode === 'racer' ? '🏎️' : '⚡'}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-black tracking-tight text-white">
-                  TypeRush: Turbo Grand Prix & Space Blaster
+                  TypeRush: Sky Floater & Turbo Racing Games
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-400 text-slate-950 tracking-wider">
-                  Interactive Games
+                  Custom Games
                 </span>
               </div>
               <p className="text-xs text-indigo-200/80">
-                Choose between Nitro Car Racing, Galaxy Space Blaster, or pure WPM Speed Sprint!
+                Type rapidly to keep your flyer floating in the sky, race AI cars, or blast alien drones!
               </p>
             </div>
           </div>
@@ -666,6 +850,7 @@ export const TypingSpeedGame: React.FC = () => {
         <div className="relative z-10 pt-4 flex flex-wrap items-center justify-between gap-3 border-t border-indigo-500/20 mt-4">
           <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-slate-900/80 border border-slate-800">
             {[
+              { id: 'sky', label: '🪂 Sky Altitude Floater', desc: 'Type to Float in the Sky' },
               { id: 'racer', label: '🏎️ Nitro Grand Prix', desc: 'Car Race' },
               { id: 'space', label: '🚀 Galaxy Blaster', desc: 'Space Laser' },
               { id: 'sprint', label: '⚡ Speed Sprint', desc: 'WPM Test' },
@@ -682,7 +867,7 @@ export const TypingSpeedGame: React.FC = () => {
                   }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-gradient-to-r from-amber-400 to-rose-500 text-slate-950 shadow-md'
+                      ? 'bg-gradient-to-r from-sky-400 via-amber-400 to-rose-500 text-slate-950 shadow-md font-black'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -693,6 +878,43 @@ export const TypingSpeedGame: React.FC = () => {
           </div>
 
           {/* Mode-specific Controls */}
+          {mode === 'sky' && (
+            <div className="flex flex-wrap items-center gap-3 text-xs">
+              {/* Gravity Wind Selector */}
+              <div className="flex items-center gap-1">
+                <span className="text-slate-400 mr-1 flex items-center gap-1">
+                  <Wind className="w-3.5 h-3.5 text-sky-400" /> Wind Gravity:
+                </span>
+                {[
+                  { id: 'gentle', label: '🍃 Gentle (Easy)' },
+                  { id: 'normal', label: '💨 Normal' },
+                  { id: 'storm', label: '🌪️ Storm (Hard)' },
+                ].map((g) => (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => setSkyGravity(g.id as SkyGravity)}
+                    className={`px-2 py-0.5 rounded-lg font-semibold transition-colors cursor-pointer text-[11px] ${
+                      skyGravity === g.id
+                        ? 'bg-sky-500 text-slate-950 font-bold'
+                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Emergency Chutes Left */}
+              <div className="flex items-center gap-1 font-mono text-xs bg-slate-950/60 px-2.5 py-1 rounded-xl border border-slate-800">
+                <span className="text-slate-400">Emergency Chutes:</span>
+                <span className="text-rose-400 font-bold">
+                  {skyChutesLeft > 0 ? '🪂'.repeat(skyChutesLeft) : '⚠️ 0'}
+                </span>
+              </div>
+            </div>
+          )}
+
           {mode === 'racer' && (
             <div className="flex items-center gap-1.5 text-xs">
               <span className="text-slate-400 mr-1 flex items-center gap-1">
@@ -759,7 +981,210 @@ export const TypingSpeedGame: React.FC = () => {
         </div>
       </div>
 
-      {/* GAME MODE 1: Turbo TypeRacer Grand Prix Track */}
+      {/* GAME MODE 1: CUSTOM SKY ALTITUDE FLOATER (Requested Feature) */}
+      {mode === 'sky' && (
+        <div className="space-y-4">
+          
+          {/* Top Flight Cockpit Telemetry Bar */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-xs">
+            <div className="flex flex-wrap items-center gap-5">
+              
+              {/* Live Altitude */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-950 flex items-center justify-center text-sky-500">
+                  <Plane className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Current Altitude</span>
+                  <span className="text-base font-black font-mono text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                    <span>{skyAltitudeMeters}m</span>
+                    <span className="text-xs text-slate-400">({Math.round(skyAltitudePct)}%)</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Climb Velocity Rate */}
+              <div className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                  skyClimbRate >= 0 
+                    ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-500' 
+                    : 'bg-rose-50 dark:bg-rose-950 text-rose-500'
+                }`}>
+                  <ArrowUp className={`w-4 h-4 transition-transform ${skyClimbRate < 0 ? 'rotate-180' : ''}`} />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Climb Rate</span>
+                  <span className={`text-sm font-black font-mono ${skyClimbRate >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {skyClimbRate >= 0 ? `+${skyClimbRate} m/s` : `${skyClimbRate} m/s`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Peak Max Altitude Reached */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950 flex items-center justify-center text-amber-500">
+                  <Trophy className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Peak Altitude</span>
+                  <span className="text-sm font-black font-mono text-amber-500">
+                    {skyMaxAltitude}m
+                  </span>
+                </div>
+              </div>
+
+              {/* Updraft Booster Status */}
+              {isSkyBoosting && (
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-400 to-rose-500 text-slate-950 font-black text-xs shadow-md animate-bounce">
+                  <Flame className="w-3.5 h-3.5" />
+                  <span>UPWARD THRUST!</span>
+                </div>
+              )}
+            </div>
+
+            {/* Flyer Vehicle Customizer */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 mr-1 hidden sm:inline">Flyer:</span>
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                {SKY_FLYERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setSkyFlyer(f.id)}
+                    className={`p-1.5 rounded-lg text-sm transition-all cursor-pointer ${
+                      skyFlyer === f.id
+                        ? 'bg-white dark:bg-slate-700 shadow-xs scale-110'
+                        : 'opacity-60 hover:opacity-100'
+                    }`}
+                    title={f.name}
+                  >
+                    <span>{f.icon}</span>
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={startNewRound}
+                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer"
+                title="Restart Flight"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Atmospheric Vertical Sky Arena */}
+          <div className="rounded-3xl p-5 bg-gradient-to-b from-[#090d16] via-[#102a45] to-[#1e3a5f] border-2 border-sky-500/30 shadow-2xl relative overflow-hidden h-80 sm:h-96 flex flex-col justify-between select-none">
+            
+            {/* Ambient Celestial Sky Elements */}
+            <div className="absolute top-3 right-6 flex items-center gap-2 text-xs font-mono text-amber-300/60 pointer-events-none">
+              <Sun className="w-4 h-4 text-amber-400 animate-spin" style={{ animationDuration: '30s' }} />
+              <span>Stratosphere Zenith</span>
+            </div>
+
+            {/* Drifting Clouds in Background */}
+            <div className="absolute top-[22%] left-[10%] opacity-25 text-3xl pointer-events-none animate-pulse">
+              ☁️
+            </div>
+            <div className="absolute top-[48%] right-[15%] opacity-35 text-4xl pointer-events-none animate-pulse" style={{ animationDuration: '4s' }}>
+              ☁️
+            </div>
+            <div className="absolute top-[70%] left-[25%] opacity-30 text-2xl pointer-events-none">
+              ⛅
+            </div>
+
+            {/* Altitude Scale Ruler on Left Edge */}
+            <div className="absolute left-3 top-3 bottom-12 w-16 border-r border-sky-400/20 flex flex-col justify-between text-[10px] font-mono text-sky-300/60 pointer-events-none">
+              <div className="flex items-center gap-1">
+                <span>3,000m</span>
+                <span className="text-[8px] text-amber-400">Orbit</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>2,000m</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>1,000m</span>
+                <span className="text-[8px] text-sky-400">Clouds</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>500m</span>
+              </div>
+              <div className="flex items-center gap-1 text-rose-400">
+                <span>100m</span>
+                <span className="text-[8px]">Danger</span>
+              </div>
+            </div>
+
+            {/* THE FLOATING POINTER / FLYER AVATAR */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 transition-all duration-150 ease-out z-20 flex flex-col items-center"
+              style={{
+                bottom: `calc(${Math.min(92, Math.max(4, skyAltitudePct))}%)`,
+              }}
+            >
+              {/* Live Altitude Meter Tag on Top of Flyer */}
+              <div className={`mb-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold flex items-center gap-1 shadow-lg transition-all ${
+                skyAltitudePct <= 20
+                  ? 'bg-rose-500 text-white animate-pulse'
+                  : isSkyBoosting
+                  ? 'bg-amber-400 text-slate-950 scale-105'
+                  : 'bg-slate-900/90 text-sky-300 border border-sky-400/30'
+              }`}>
+                <span>{skyAltitudeMeters}m</span>
+                <span>{skyClimbRate >= 0 ? '⬆️' : '⬇️'}</span>
+              </div>
+
+              {/* Flyer Body with Thruster Flame */}
+              <div className="relative flex flex-col items-center">
+                <div className={`text-4xl filter drop-shadow-[0_4px_10px_rgba(56,189,248,0.5)] transition-transform duration-100 ${
+                  isSkyBoosting ? 'scale-125 -translate-y-1' : ''
+                }`}>
+                  {activeFlyerOption.icon}
+                </div>
+
+                {/* Booster Flame / Upward Exhaust */}
+                {isSkyBoosting && (
+                  <div className="absolute -bottom-5 flex flex-col items-center animate-bounce">
+                    <span className="text-base">🔥</span>
+                    <span className="text-[9px] font-bold text-amber-400 font-mono tracking-tight">BOOST</span>
+                  </div>
+                )}
+                {!isSkyBoosting && skyAltitudePct > 20 && (
+                  <div className="text-[10px] text-sky-300/70 font-mono animate-pulse">
+                    ~ ~ ~
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Danger Impact Ground Zone at Bottom */}
+            <div className="relative z-10 mt-auto pt-2 border-t border-rose-500/30 flex items-center justify-between text-xs px-2 bg-gradient-to-t from-rose-950/40 to-transparent">
+              <div className="flex items-center gap-2">
+                {skyAltitudePct <= 20 ? (
+                  <div className="flex items-center gap-1.5 text-rose-400 font-bold animate-pulse">
+                    <AlertTriangle className="w-4 h-4 text-rose-500" />
+                    <span>⚠️ LOW ALTITUDE WARNING! TYPE WORDS FASTER TO GAIN LIFT!</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-sky-300 font-medium">
+                    <Cloud className="w-4 h-4 text-sky-400" />
+                    <span>Airborne Cruising Layer: Keep typing rhythm to stay floating!</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-slate-400 font-mono text-[11px] hidden sm:block">
+                Touchdown Cushion: <strong className="text-rose-400">{skyChutesLeft} Left</strong>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* GAME MODE 2: Turbo TypeRacer Grand Prix Track */}
       {mode === 'racer' && (
         <div className="space-y-4">
           
@@ -867,7 +1292,7 @@ export const TypingSpeedGame: React.FC = () => {
         </div>
       )}
 
-      {/* GAME MODE 2: Space Blaster Galaxy Defender */}
+      {/* GAME MODE 3: Space Blaster Galaxy Defender */}
       {mode === 'space' && (
         <div className="space-y-4">
           <div className="rounded-3xl p-6 bg-slate-950 border border-indigo-500/30 shadow-2xl relative overflow-hidden h-72 flex flex-col justify-between">
@@ -1019,7 +1444,11 @@ export const TypingSpeedGame: React.FC = () => {
                 onChange={handleInputChange}
                 onKeyDown={(e) => setActiveKey(e.key.toLowerCase())}
                 onKeyUp={() => setActiveKey('')}
-                placeholder={startTime ? "Type current word and hit Spacebar..." : "Click here or start typing to begin!"}
+                placeholder={
+                  startTime 
+                    ? (mode === 'sky' ? "Type fast to gain lift! Spacebar to thrust up..." : "Type current word and hit Spacebar...") 
+                    : (mode === 'sky' ? "Start typing to launch into the sky! Keep typing or gravity will pull you down!" : "Click here or start typing to begin!")
+                }
                 autoFocus
                 className="w-full px-5 py-3.5 text-base sm:text-lg font-mono rounded-2xl border-2 border-indigo-500/40 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white shadow-inner focus:outline-hidden focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"
               />
@@ -1036,7 +1465,7 @@ export const TypingSpeedGame: React.FC = () => {
           </div>
         </div>
 
-        {/* Live Race Telemetry HUD */}
+        {/* Live Flight / Race Telemetry HUD */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 shadow-xs">
           
           <div className="flex items-center gap-3">
@@ -1075,10 +1504,10 @@ export const TypingSpeedGame: React.FC = () => {
             </div>
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                {mode === 'space' ? 'Space Score' : 'Best Record'}
+                {mode === 'sky' ? 'Peak Altitude' : mode === 'space' ? 'Space Score' : 'Best Record'}
               </span>
               <span className="text-2xl font-black font-mono text-amber-600 dark:text-amber-400">
-                {mode === 'space' ? spaceScore : `${Math.max(currentWpm, highScoreWpm)} WPM`}
+                {mode === 'sky' ? `${Math.max(skyMaxAltitude, skyHighScoreMeters)}m` : mode === 'space' ? spaceScore : `${Math.max(currentWpm, highScoreWpm)} WPM`}
               </span>
             </div>
           </div>
@@ -1095,22 +1524,27 @@ export const TypingSpeedGame: React.FC = () => {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-2">
                 <span>
-                  {mode === 'racer' 
+                  {mode === 'sky'
+                    ? `🪂 Flight Completed: ${skyMaxAltitude}m Peak Altitude`
+                    : mode === 'racer' 
                     ? (playerRank === 1 ? '🥇 1st Place Victory' : `${playerRank}th Place Finish`)
                     : mode === 'space'
                     ? `🛸 Mission Result: Wave ${spaceWave}`
                     : `⚡ Sprint Result: ${currentWpm} WPM`}
                 </span>
-                <span>• Tier: {rank.title}</span>
+                <span>• Rank: {rank.title}</span>
               </div>
               <h3 className="text-3xl font-black text-white">
+                {mode === 'sky' && '🪂 Touchdown! Great Flight in the Sky!'}
                 {mode === 'racer' && playerRank === 1 && '🏆 Grand Prix Champion!'}
                 {mode === 'racer' && playerRank > 1 && '🏁 Race Completed!'}
                 {mode === 'space' && '🚀 Galaxy Defense Complete!'}
-                {mode !== 'racer' && mode !== 'space' && '🎉 Speed Benchmark Complete!'}
+                {mode !== 'racer' && mode !== 'space' && mode !== 'sky' && '🎉 Speed Benchmark Complete!'}
               </h3>
               <p className="text-xs text-indigo-200">
-                {playerRank === 1 
+                {mode === 'sky'
+                  ? `You kept the pointer soaring up to ${skyMaxAltitude} meters! Practice fast typing rhythm to stay floating even longer.`
+                  : playerRank === 1 
                   ? 'Outstanding typing velocity and accuracy!' 
                   : 'Great run! Try again to beat your record and climb the leaderboard.'}
               </p>
@@ -1156,13 +1590,13 @@ export const TypingSpeedGame: React.FC = () => {
             </div>
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
               <span className="text-[11px] text-slate-400 uppercase block">
-                {mode === 'space' ? 'Total Score' : 'All-time Best'}
+                {mode === 'sky' ? 'Max Altitude' : mode === 'space' ? 'Total Score' : 'All-time Best'}
               </span>
               <span className="text-3xl font-black text-indigo-400">
-                {mode === 'space' ? spaceScore : highScoreWpm}
+                {mode === 'sky' ? `${skyMaxAltitude}m` : mode === 'space' ? spaceScore : highScoreWpm}
               </span>
               <span className="text-xs text-slate-400 block">
-                {mode === 'space' ? 'Points' : 'Record WPM'}
+                {mode === 'sky' ? 'Peak Height' : mode === 'space' ? 'Points' : 'Record WPM'}
               </span>
             </div>
           </div>

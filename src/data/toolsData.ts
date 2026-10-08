@@ -432,31 +432,31 @@ export const TOOLS: ToolMeta[] = [
   // Creator & Social Media Tools
   {
     id: 'typing-speed-game',
-    name: 'TypeRush: Turbo Grand Prix & Space Blaster Typing Game',
+    name: 'TypeRush: Sky Altitude Floater & Turbo Racing Game',
     slug: 'typing-speed-game',
     category: 'creator',
     iconName: 'Gamepad2',
     badge: 'Featured Game',
-    description: 'Race live AI rivals in Turbo Grand Prix car battle, defend the cosmos in Galaxy Space Blaster, and test WPM speed in real-time.',
-    longDescription: 'The world’s most popular, addictive typing game formats inspired by TypeRacer and Space Invaders! Control your race car with nitro boosts, blast enemy space drones with laser cannons, or test your speed in classic timed sprints.',
-    keywords: ['typing speed game', 'typeracer game', 'nitro type', 'space blaster typing', 'car racing typing test', 'wpm race battle', 'keyboard typing practice', 'typing speed test'],
+    description: 'Keep your pointer floating in the sky by typing rapidly, race AI cars in Turbo Grand Prix, and blast enemy drones in Space Blaster!',
+    longDescription: 'Features the custom Sky Altitude Floater where keyboard typing provides upward lift against gravity to keep your flyer soaring, plus Turbo Grand Prix car racing and Space Blaster defender!',
+    keywords: ['typing speed game', 'sky floater typing', 'keep pointer floating typing', 'typeracer game', 'nitro type', 'space blaster typing', 'car racing typing test', 'wpm race battle', 'keyboard typing practice'],
     features: [
+      'Sky Altitude Floater: Real-time gravity physics where typing lifts your pointer/flyer into the stratosphere',
+      'Selectable flyers: Paraglider, Hot Air Balloon, Aero Jetpack, Golden Falcon, or UFO Drone',
       'Turbo Grand Prix car racing battle with 3 AI competitors (Rookie to Legend)',
       'Galaxy Space Blaster defender mode with laser cannons, shields, and alien waves',
-      'Nitro Boost activation on 5+ streak words with authentic audio acceleration',
-      '15s/30s/60s Speed Sprints and Developer Code Ninja syntax modes',
-      'Realistic mechanical keyboard clicks, engine roar, and laser effects via Web Audio API',
-      'On-screen QWERTY mechanical key guide and personal best WPM record saving'
+      'Dynamic climb rates (m/s), altitude meters, emergency parachutes, and peak height recording',
+      'Realistic mechanical key sounds, thrusters whoosh, and audio feedback via Web Audio API'
     ],
     instructions: [
-      { step: 1, title: 'Choose your game mode', desc: 'Select Turbo Grand Prix car racing, Galaxy Space Blaster, or timed Speed Sprint.' },
-      { step: 2, title: 'Type prompt words', desc: 'Type each word smoothly and hit Spacebar to accelerate your car or fire lasers.' },
-      { step: 3, title: 'Trigger combos and boosts', desc: 'Chain consecutive words without errors to unleash high-speed nitro flames or score multipliers.' },
-      { step: 4, title: 'Win trophies and rank up', desc: 'Claim 1st place on the podium or defend all 4 waves to achieve typing mastery.' }
+      { step: 1, title: 'Choose your game mode', desc: 'Select Sky Altitude Floater to keep your flyer airborne, Turbo Grand Prix for car racing, or Space Blaster.' },
+      { step: 2, title: 'Type prompt words', desc: 'Type each word smoothly. In Sky mode, typing faster generates upward lift against falling gravity.' },
+      { step: 3, title: 'Trigger combos and boosts', desc: 'Chain consecutive words without errors to unleash booster thrusts or nitro speed acceleration.' },
+      { step: 4, title: 'Reach peak altitude and win trophies', desc: 'Reach the highest altitude or claim 1st place on the podium to set new personal records.' }
     ],
     faqs: [
-      { question: 'Why is the car racing format so popular?', answer: 'Competing against moving cars provides immediate visual motivation and dopamine, allowing you to intuitively increase typing cadence without looking down at the keyboard!' },
-      { question: 'Can I play offline without internet?', answer: 'Yes! All race physics, competitor curves, and sound effects execute 100% locally in your browser.' }
+      { question: 'How does the Sky Altitude Floater work?', answer: 'Gravity constantly pulls your pointer downward towards the ground. Every keystroke generates upward aerodynamic lift, and completing words triggers booster thrusters to keep your flyer climbing into the stratosphere!' },
+      { question: 'Can I play offline without internet?', answer: 'Yes! All flight physics, competitor curves, and sound effects execute 100% locally in your browser.' }
     ],
     clientSideOnly: true
   },

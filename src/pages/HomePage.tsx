@@ -124,23 +124,23 @@ export const HomePage: React.FC = () => {
                   <Gamepad2 className="w-3.5 h-3.5" />
                   Interactive Game
                 </span>
-                <span className="text-[11px] font-mono text-indigo-300">
-                  Turbo Race • Sprints
+                <span className="text-[11px] font-mono text-sky-300">
+                  Sky Floater • Grand Prix
                 </span>
               </div>
 
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                TypeRush: Grand Prix & Space Blaster
+                TypeRush: Sky Floater & Turbo Racing
               </h2>
 
               <p className="text-xs text-indigo-200/90 leading-relaxed">
-                Race live cars against AI rivals on the Grand Prix track or defend the galaxy with laser cannons in Space Blaster!
+                Type rapidly to keep your pointer soaring against gravity in the sky, or race AI cars on the Grand Prix track!
               </p>
 
               <div className="flex flex-wrap gap-1.5 pt-1 text-[11px] font-medium text-indigo-200">
-                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Live Car Race Track</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Galaxy Space Blaster</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ Speedometer & Podium</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ 🪂 Sky Floater Against Gravity</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ 🏎️ Live Car Race Track</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/10">✓ 🚀 Galaxy Space Blaster</span>
               </div>
             </div>
 
