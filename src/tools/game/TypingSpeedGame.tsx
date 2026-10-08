@@ -152,6 +152,10 @@ export const TypingSpeedGame: React.FC = () => {
   const [isSkyBoosting, setIsSkyBoosting] = useState<boolean>(false);
   const [skyFlightTimeSec, setSkyFlightTimeSec] = useState<number>(0);
 
+  // 2-3 LINES DISPLAY PAGING STATES (Requested User Preference)
+  const [displayMode, setDisplayMode] = useState<'chunk' | 'all'>('chunk'); // 'chunk' = 2-3 lines auto-paging
+  const [chunkWordCount, setChunkWordCount] = useState<number>(12); // exactly 2-3 lines (~12 words)
+
   // TypeRacer Grand Prix states
   const [racers, setRacers] = useState<Racer[]>([
     { id: 'player', name: 'You (Champion)', car: '🏎️', color: 'from-amber-400 to-rose-500', wpm: 0, progress: 0, isPlayer: true },
@@ -286,6 +290,15 @@ export const TypingSpeedGame: React.FC = () => {
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
         osc.start();
         osc.stop(ctx.currentTime + 0.35);
+      } else if (type === 'milestone') {
+        // Satisfying chime when completing a 2-3 lines batch
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
       }
     } catch {
       // Audio fallback
@@ -388,7 +401,7 @@ export const TypingSpeedGame: React.FC = () => {
     setPlayerRank(1);
 
     setTimeout(() => {
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
     }, 50);
   }, [mode, duration, raceDifficulty, getAiSpeeds, generateSpaceTargets]);
 
@@ -682,12 +695,21 @@ export const TypingSpeedGame: React.FC = () => {
         });
 
         const nextIndex = currentWordIndex + 1;
+
+        // Check if completing a 2-3 lines batch
+        const effectiveChunk = displayMode === 'chunk' ? chunkWordCount : targetWords.length || 1;
+        const curBatch = Math.floor(currentWordIndex / effectiveChunk);
+        const nxtBatch = Math.floor(nextIndex / effectiveChunk);
+        if (displayMode === 'chunk' && nxtBatch > curBatch && nextIndex < targetWords.length) {
+          playSound('milestone');
+        }
+
         setCurrentWordIndex(nextIndex);
         setCurrentInput('');
 
         // If in Sky mode and getting near end of words list, seamlessly append more sky words!
-        if (mode === 'sky' && nextIndex >= targetWords.length - 6) {
-          const moreWords = [...SKY_WORDS, ...COMMON_WORDS].sort(() => 0.5 - Math.random()).slice(0, 30);
+        if (mode === 'sky' && nextIndex >= targetWords.length - 8) {
+          const moreWords = [...SKY_WORDS, ...COMMON_WORDS].sort(() => 0.5 - Math.random()).slice(0, 36);
           setTargetWords((prev) => [...prev, ...moreWords]);
         }
 
@@ -1075,7 +1097,7 @@ export const TypingSpeedGame: React.FC = () => {
           </div>
 
           {/* Atmospheric Vertical Sky Arena */}
-          <div className="rounded-3xl p-5 bg-gradient-to-b from-[#090d16] via-[#102a45] to-[#1e3a5f] border-2 border-sky-500/30 shadow-2xl relative overflow-hidden h-80 sm:h-96 flex flex-col justify-between select-none">
+          <div className="rounded-3xl p-5 bg-gradient-to-b from-[#090d16] via-[#102a45] to-[#1e3a5f] border-2 border-sky-500/30 shadow-2xl relative overflow-hidden h-64 sm:h-72 flex flex-col justify-between select-none">
             
             {/* Ambient Celestial Sky Elements */}
             <div className="absolute top-3 right-6 flex items-center gap-2 text-xs font-mono text-amber-300/60 pointer-events-none">
@@ -1383,87 +1405,187 @@ export const TypingSpeedGame: React.FC = () => {
       )}
 
       {/* Main Interactive Typing Prompt Card */}
-      <div className="space-y-4">
-        
-        {/* Words Display Canvas / Prompt Container */}
-        <div
-          onClick={() => inputRef.current?.focus()}
-          className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl cursor-text relative select-none"
-        >
-          {/* Target Words Stream */}
-          <div className="flex flex-wrap gap-2.5 text-lg sm:text-2xl font-mono leading-relaxed tracking-wide min-h-[110px] items-center">
-            {targetWords.map((word, wIdx) => {
-              const isPast = wIdx < currentWordIndex;
-              const isCurrent = wIdx === currentWordIndex;
+      {(() => {
+        // 2-3 Lines Chunk Display Calculations (User Preference)
+        const effectiveChunkSize = displayMode === 'chunk' ? chunkWordCount : targetWords.length || 1;
+        const currentBatchIndex = Math.floor(currentWordIndex / effectiveChunkSize);
+        const batchStartIndex = currentBatchIndex * effectiveChunkSize;
+        const batchEndIndex = Math.min(targetWords.length, batchStartIndex + effectiveChunkSize);
+        const currentBatchWords = targetWords.slice(batchStartIndex, batchEndIndex);
+        const totalBatches = Math.ceil(targetWords.length / effectiveChunkSize) || 1;
+        const wordsInCurrentBatchDone = currentWordIndex - batchStartIndex;
 
-              return (
-                <span
-                  key={wIdx}
-                  className={`relative px-2 py-0.5 rounded-xl transition-all ${
-                    isPast
-                      ? 'text-emerald-600 dark:text-emerald-400 opacity-60'
-                      : isCurrent
-                      ? 'bg-indigo-50 dark:bg-indigo-950/80 text-slate-900 dark:text-white ring-2 ring-indigo-500 font-bold shadow-sm'
-                      : 'text-slate-400 dark:text-slate-500'
-                  }`}
-                >
-                  {isCurrent ? (
-                    word.split('').map((char, cIdx) => {
-                      let charClass = 'text-slate-900 dark:text-white';
-                      if (cIdx < currentInput.length) {
-                        if (currentInput[cIdx] === char) {
-                          charClass = 'text-emerald-500 dark:text-emerald-400 font-bold';
-                        } else {
-                          charClass = 'text-rose-500 bg-rose-100 dark:bg-rose-950 rounded-xs underline decoration-rose-500';
-                        }
-                      } else if (cIdx === currentInput.length) {
-                        charClass = 'border-b-2 border-indigo-500 animate-pulse text-indigo-600 dark:text-indigo-400';
-                      }
-
-                      return (
-                        <span key={cIdx} className={charClass}>
-                          {char}
-                        </span>
-                      );
-                    })
-                  ) : (
-                    word
-                  )}
-                </span>
-              );
-            })}
-          </div>
-
-          {/* Active Input Box */}
-          <div className="pt-6 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
-            <div className="flex-1 relative">
-              <input
-                ref={inputRef}
-                type="text"
-                value={currentInput}
-                onChange={handleInputChange}
-                onKeyDown={(e) => setActiveKey(e.key.toLowerCase())}
-                onKeyUp={() => setActiveKey('')}
-                placeholder={
-                  startTime 
-                    ? (mode === 'sky' ? "Type fast to gain lift! Spacebar to thrust up..." : "Type current word and hit Spacebar...") 
-                    : (mode === 'sky' ? "Start typing to launch into the sky! Keep typing or gravity will pull you down!" : "Click here or start typing to begin!")
-                }
-                autoFocus
-                className="w-full px-5 py-3.5 text-base sm:text-lg font-mono rounded-2xl border-2 border-indigo-500/40 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white shadow-inner focus:outline-hidden focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={startNewRound}
-              className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer shadow-xs"
-              title="Restart Round"
+        return (
+          <div className="space-y-4">
+            
+            {/* Words Display Canvas / Prompt Container */}
+            <div
+              onClick={() => inputRef.current?.focus({ preventScroll: true })}
+              className="p-5 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl cursor-text relative select-none"
             >
-              <RotateCcw className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+              {/* Header with 2-3 Lines Mode Status & Controls */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-100 dark:border-slate-800/80 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center gap-1.5 text-[11px]">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{displayMode === 'chunk' ? '2-3 Lines Mode (Auto-Clearing)' : 'Continuous Mode'}</span>
+                  </span>
+                  <span className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">
+                    {displayMode === 'chunk'
+                      ? `Batch ${currentBatchIndex + 1} of ${totalBatches} (${wordsInCurrentBatchDone}/${currentBatchWords.length} words)`
+                      : `${currentWordIndex}/${targetWords.length} words`}
+                  </span>
+                </div>
+
+                {/* Chunk Size Controls */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-xl text-[11px] font-mono">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDisplayMode('chunk');
+                      setChunkWordCount(8);
+                      inputRef.current?.focus({ preventScroll: true });
+                    }}
+                    className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                      displayMode === 'chunk' && chunkWordCount === 8
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                    title="Compact 2 Lines (8 words)"
+                  >
+                    2 Lines
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDisplayMode('chunk');
+                      setChunkWordCount(12);
+                      inputRef.current?.focus({ preventScroll: true });
+                    }}
+                    className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                      displayMode === 'chunk' && chunkWordCount === 12
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                    title="2-3 Lines (12 words - Default)"
+                  >
+                    2-3 Lines
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDisplayMode('chunk');
+                      setChunkWordCount(16);
+                      inputRef.current?.focus({ preventScroll: true });
+                    }}
+                    className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                      displayMode === 'chunk' && chunkWordCount === 16
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                    title="3-4 Lines (16 words)"
+                  >
+                    3-4 Lines
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDisplayMode(displayMode === 'all' ? 'chunk' : 'all');
+                      inputRef.current?.focus({ preventScroll: true });
+                    }}
+                    className={`px-2 py-0.5 rounded-lg transition-all cursor-pointer ${
+                      displayMode === 'all'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs font-bold'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                    title="Show all continuous text"
+                  >
+                    All
+                  </button>
+                </div>
+              </div>
+
+              {/* Target Words Stream - Strict 2-3 Lines Container */}
+              <div
+                key={`chunk-${currentBatchIndex}`}
+                className="flex flex-wrap gap-2 sm:gap-2.5 text-base sm:text-xl font-mono leading-relaxed tracking-wide min-h-[75px] max-h-[105px] overflow-hidden items-center content-start animate-in fade-in-50 duration-200"
+              >
+                {currentBatchWords.map((word, relIdx) => {
+                  const globalIdx = batchStartIndex + relIdx;
+                  const isPast = globalIdx < currentWordIndex;
+                  const isCurrent = globalIdx === currentWordIndex;
+
+                  return (
+                    <span
+                      key={globalIdx}
+                      className={`relative px-2 py-0.5 rounded-xl transition-all ${
+                        isPast
+                          ? 'text-emerald-600 dark:text-emerald-400 opacity-60'
+                          : isCurrent
+                          ? 'bg-indigo-50 dark:bg-indigo-950/80 text-slate-900 dark:text-white ring-2 ring-indigo-500 font-bold shadow-sm'
+                          : 'text-slate-400 dark:text-slate-500'
+                      }`}
+                    >
+                      {isCurrent ? (
+                        word.split('').map((char, cIdx) => {
+                          let charClass = 'text-slate-900 dark:text-white';
+                          if (cIdx < currentInput.length) {
+                            if (currentInput[cIdx] === char) {
+                              charClass = 'text-emerald-500 dark:text-emerald-400 font-bold';
+                            } else {
+                              charClass = 'text-rose-500 bg-rose-100 dark:bg-rose-950 rounded-xs underline decoration-rose-500';
+                            }
+                          } else if (cIdx === currentInput.length) {
+                            charClass = 'border-b-2 border-indigo-500 animate-pulse text-indigo-600 dark:text-indigo-400';
+                          }
+
+                          return (
+                            <span key={cIdx} className={charClass}>
+                              {char}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        word
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+
+              {/* Active Input Box */}
+              <div className="pt-4 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
+                <div className="flex-1 relative">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={currentInput}
+                    onChange={handleInputChange}
+                    onKeyDown={(e) => setActiveKey(e.key.toLowerCase())}
+                    onKeyUp={() => setActiveKey('')}
+                    placeholder={
+                      startTime 
+                        ? (mode === 'sky' ? "Type fast to gain lift! Spacebar to thrust up..." : "Type current word and hit Spacebar...") 
+                        : (mode === 'sky' ? "Start typing to float in the sky! Complete words to thrust up!" : "Click here or start typing to begin!")
+                    }
+                    className="w-full px-5 py-3 text-base sm:text-lg font-mono rounded-2xl border-2 border-indigo-500/40 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white shadow-inner focus:outline-hidden focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={startNewRound}
+                  className="p-3 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer shadow-xs"
+                  title="Restart Round"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
         {/* Live Flight / Race Telemetry HUD */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 shadow-xs">
@@ -1515,6 +1637,8 @@ export const TypingSpeedGame: React.FC = () => {
         </div>
 
       </div>
+        );
+      })()}
 
       {/* Game Over Victory Podium Screen */}
       {isGameOver && (
