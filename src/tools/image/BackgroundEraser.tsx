@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Eraser, Download, CheckCircle2, AlertCircle, Info, Sliders, Pipette } from 'lucide-react';
+import { Eraser, Download, CheckCircle2, AlertCircle, Info, Sliders, Pipette, Wand2, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { FileUploader } from '../../components/FileUploader/FileUploader';
 
@@ -9,12 +9,12 @@ export const BackgroundEraser: React.FC = () => {
   const [targetColor, setTargetColor] = useState<{ r: number; g: number; b: number }>({ r: 255, g: 255, b: 255 });
   const [hexColor, setHexColor] = useState<string>('#ffffff');
   const [tolerance, setTolerance] = useState<number>(30);
-  const [feather, setFeather] = useState<number>(10);
+  const [feather, setFeather] = useState<number>(8);
   const [isSampling, setIsSampling] = useState<boolean>(false);
+  const [eraseMode, setEraseMode] = useState<'contiguous' | 'global'>('contiguous');
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [previewBackdrop, setPreviewBackdrop] = useState<'checkered' | 'dark' | 'light'>('checkered');
-
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const handleFileSelected = (files: File[]) => {
     if (!files[0]) return;
@@ -22,45 +22,112 @@ export const BackgroundEraser: React.FC = () => {
     const url = URL.createObjectURL(files[0]);
     setPreviewSrc(url);
     setResultUrl(null);
-  };
 
-  const processRemoval = () => {
-    if (!previewSrc) return;
+    // Auto-detect background color from corners
     const img = new Image();
-    img.src = previewSrc;
+    img.src = url;
     img.onload = () => {
       const canvas = document.createElement('canvas');
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        // Sample top-left corner (2,2)
+        const p = ctx.getImageData(Math.min(2, img.naturalWidth - 1), Math.min(2, img.naturalHeight - 1), 1, 1).data;
+        setTargetColor({ r: p[0], g: p[1], b: p[2] });
+        const toHex = (c: number) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0');
+        setHexColor(`#${toHex(p[0])}${toHex(p[1])}${toHex(p[2])}`);
+      }
+    };
+  };
+
+  const processRemoval = () => {
+    if (!previewSrc) return;
+    setIsProcessing(true);
+
+    const img = new Image();
+    img.src = previewSrc;
+    img.onload = () => {
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        setIsProcessing(false);
+        return;
+      }
       ctx.drawImage(img, 0, 0);
 
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const imgData = ctx.getImageData(0, 0, width, height);
       const data = imgData.data;
       const { r: tr, g: tg, b: tb } = targetColor;
 
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
+      const tolDist = (tolerance / 100) * 441.67; // max distance sqrt(255^2*3) = 441.67
+      const featherDist = (feather / 100) * 441.67;
 
-        // Euclidean color distance
-        const dist = Math.sqrt(
-          Math.pow(r - tr, 2) +
-          Math.pow(g - tg, 2) +
-          Math.pow(b - tb, 2)
-        );
+      const colorDist = (r: number, g: number, b: number) => {
+        return Math.sqrt(Math.pow(r - tr, 2) + Math.pow(g - tg, 2) + Math.pow(b - tb, 2));
+      };
 
-        const tolDist = (tolerance / 100) * 441.67; // max distance sqrt(255^2*3) = 441.67
-        const featherDist = (feather / 100) * 441.67;
+      if (eraseMode === 'contiguous') {
+        // BFS Flood-fill from borders
+        const visited = new Uint8Array(width * height);
+        const queue: number[] = [];
 
-        if (dist <= tolDist) {
-          data[i + 3] = 0; // fully transparent
-        } else if (dist < tolDist + featherDist) {
-          // Smooth alpha transition
-          const alphaFactor = (dist - tolDist) / (featherDist || 1);
-          data[i + 3] = Math.round(data[i + 3] * alphaFactor);
+        // Push border pixels
+        for (let x = 0; x < width; x++) {
+          queue.push(x); // top row y=0
+          queue.push((height - 1) * width + x); // bottom row
+        }
+        for (let y = 0; y < height; y++) {
+          queue.push(y * width); // left col x=0
+          queue.push(y * width + (width - 1)); // right col
+        }
+
+        while (queue.length > 0) {
+          const idx = queue.pop()!;
+          if (visited[idx]) continue;
+          visited[idx] = 1;
+
+          const pIdx = idx * 4;
+          const r = data[pIdx];
+          const g = data[pIdx + 1];
+          const b = data[pIdx + 2];
+          const dist = colorDist(r, g, b);
+
+          if (dist <= tolDist) {
+            data[pIdx + 3] = 0; // fully transparent
+
+            // Expand to 4 neighbors
+            const x = idx % width;
+            const y = Math.floor(idx / width);
+
+            if (x > 0 && !visited[idx - 1]) queue.push(idx - 1);
+            if (x < width - 1 && !visited[idx + 1]) queue.push(idx + 1);
+            if (y > 0 && !visited[idx - width]) queue.push(idx - width);
+            if (y < height - 1 && !visited[idx + width]) queue.push(idx + width);
+          } else if (dist < tolDist + featherDist) {
+            const factor = (dist - tolDist) / (featherDist || 1);
+            data[pIdx + 3] = Math.round(data[pIdx + 3] * factor);
+          }
+        }
+      } else {
+        // Global color distance match across whole image
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const dist = colorDist(r, g, b);
+
+          if (dist <= tolDist) {
+            data[i + 3] = 0;
+          } else if (dist < tolDist + featherDist) {
+            const alphaFactor = (dist - tolDist) / (featherDist || 1);
+            data[i + 3] = Math.round(data[i + 3] * alphaFactor);
+          }
         }
       }
 
@@ -70,6 +137,7 @@ export const BackgroundEraser: React.FC = () => {
         if (blob) {
           setResultUrl(URL.createObjectURL(blob));
         }
+        setIsProcessing(false);
       }, 'image/png');
     };
   };
@@ -79,7 +147,7 @@ export const BackgroundEraser: React.FC = () => {
       const timer = setTimeout(processRemoval, 150);
       return () => clearTimeout(timer);
     }
-  }, [previewSrc, targetColor, tolerance, feather]);
+  }, [previewSrc, targetColor, tolerance, feather, eraseMode]);
 
   const handleSampleClick = (e: React.MouseEvent<HTMLImageElement>) => {
     if (!isSampling) return;
@@ -103,13 +171,21 @@ export const BackgroundEraser: React.FC = () => {
     setIsSampling(false);
   };
 
+  const handleAutoRemove = () => {
+    setEraseMode('contiguous');
+    setTolerance(32);
+    setFeather(10);
+    processRemoval();
+    confetti({ particleCount: 30, spread: 50 });
+  };
+
   return (
     <div className="space-y-6">
-      {/* Informational Architecture Banner */}
+      {/* Information Banner */}
       <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 text-xs sm:text-sm flex items-start gap-3">
         <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold">Client-Side Color-Keying Isolation:</span> This tool runs entirely in your browser using Euclidean RGB distance clustering. It excels at logos, graphics, icons, signatures, and studio photos with uniform backdrops without sending your files to a paid third-party cloud API.
+          <span className="font-bold">Contiguous Edge-Isolation Engine:</span> Removes backgrounds without erasing inner elements like white teeth, shirts, or logos. Runs 100% locally in your browser memory.
         </div>
       </div>
 
@@ -119,24 +195,37 @@ export const BackgroundEraser: React.FC = () => {
           maxSizeMB={20}
           onFilesSelected={handleFileSelected}
           title="Upload image with solid or uniform background"
-          subtitle="Isolate logos, artwork, products, and graphic assets into transparent PNGs"
+          subtitle="Isolate logos, artwork, products, and graphics into transparent PNGs"
         />
       ) : (
         <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{file.name}</h4>
-            <button
-              type="button"
-              onClick={() => { setFile(null); setPreviewSrc(null); setResultUrl(null); }}
-              className="text-xs text-rose-500 hover:underline cursor-pointer"
-            >
-              Choose different image
-            </button>
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{file.name}</h4>
+              <p className="text-xs text-slate-400">Ready for instant transparent PNG extraction</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleAutoRemove}
+                className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                <span>Auto-Erase Background</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setFile(null); setPreviewSrc(null); setResultUrl(null); }}
+                className="text-xs text-rose-500 hover:underline cursor-pointer"
+              >
+                Choose different image
+              </button>
+            </div>
           </div>
 
           {/* Controls Bar */}
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+          <div className="p-5 rounded-3xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-4 shadow-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               
               {/* Color to Remove */}
               <div className="space-y-1.5">
@@ -168,7 +257,38 @@ export const BackgroundEraser: React.FC = () => {
                     }`}
                   >
                     <Pipette className="w-3.5 h-3.5" />
-                    <span>{isSampling ? 'Click image...' : 'Sample on Image'}</span>
+                    <span>{isSampling ? 'Click image...' : 'Pick from Image'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Erase Mode */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
+                  Isolation Mode:
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setEraseMode('contiguous')}
+                    className={`py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                      eraseMode === 'contiguous'
+                        ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    Outer Only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEraseMode('global')}
+                    className={`py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                      eraseMode === 'global'
+                        ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    Everywhere
                   </button>
                 </div>
               </div>
@@ -191,7 +311,7 @@ export const BackgroundEraser: React.FC = () => {
               {/* Edge Feather */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  <span>Edge Feathering: {feather}%</span>
+                  <span>Edge Smoothness: {feather}%</span>
                 </div>
                 <input
                   type="range"
@@ -212,7 +332,7 @@ export const BackgroundEraser: React.FC = () => {
             {/* Original with sample handler */}
             <div className="space-y-2">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block">
-                Original Image {isSampling && '(Click to pick background color)'}
+                Original Image {isSampling && '(Click to pick color)'}
               </span>
               <div className="rounded-2xl border border-slate-200 dark:border-slate-700 p-4 bg-slate-100 dark:bg-slate-900 flex items-center justify-center min-h-64">
                 {previewSrc && (

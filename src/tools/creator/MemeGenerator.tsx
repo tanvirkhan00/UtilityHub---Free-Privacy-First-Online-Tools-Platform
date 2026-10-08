@@ -1,31 +1,45 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Smile, Download, Upload, RefreshCw, Type } from 'lucide-react';
+import { Smile, Download, Upload, RefreshCw, Type, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { FileUploader } from '../../components/FileUploader/FileUploader';
 
+// Built-in 100% CORS-safe starter canvases
 const POPULAR_TEMPLATES = [
   {
-    name: 'One Does Not Simply',
-    url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80',
+    name: 'Dramatic Code Neon',
+    color1: '#312e81',
+    color2: '#0f172a',
+    accent: '#818cf8',
+    label: '💻 Tech / Coding',
   },
   {
-    name: 'Tech Desk & Coffee',
-    url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80',
+    name: 'Fiery Sunset Red',
+    color1: '#7f1d1d',
+    color2: '#450a0a',
+    accent: '#f87171',
+    label: '🔥 Intense / Drama',
   },
   {
-    name: 'Curious Cat',
-    url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&auto=format&fit=crop&q=80',
+    name: 'Emerald Chill Green',
+    color1: '#064e3b',
+    color2: '#022c22',
+    accent: '#34d399',
+    label: '🌿 Chill / Success',
   },
   {
-    name: 'Dog Thinking',
-    url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=80',
+    name: 'Cyberpunk Purple',
+    color1: '#581c87',
+    color2: '#1e1b4b',
+    accent: '#c084fc',
+    label: '👾 Cyberpunk',
   },
 ];
 
 export const MemeGenerator: React.FC = () => {
-  const [imgSrc, setImgSrc] = useState<string>(POPULAR_TEMPLATES[0].url);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<number>(0);
+  const [customImgSrc, setCustomImgSrc] = useState<string | null>(null);
   const [topText, setTopText] = useState<string>('ONE DOES NOT SIMPLY');
-  const [bottomText, setBottomText] = useState<string>('WRITE CODE WITHOUT BUGS');
+  const [bottomText, setBottomText] = useState<string>('DEPLOY ON FRIDAY AFTERNOON');
   const [fontSize, setFontSize] = useState<number>(44);
   const [uppercase, setUppercase] = useState<boolean>(true);
   const [textColor, setTextColor] = useState<string>('#ffffff');
@@ -37,30 +51,22 @@ export const MemeGenerator: React.FC = () => {
   const handleCustomUpload = (files: File[]) => {
     if (!files[0]) return;
     const url = URL.createObjectURL(files[0]);
-    setImgSrc(url);
+    setCustomImgSrc(url);
   };
 
   const renderMeme = () => {
     const canvas = canvasRef.current;
-    if (!canvas || !imgSrc) return;
+    if (!canvas) return;
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = imgSrc;
-    img.onload = () => {
-      canvas.width = 700;
-      canvas.height = Math.round((img.naturalHeight / img.naturalWidth) * 700);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-      // Draw background image
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
+    const drawTextOverCanvas = () => {
       // Typography
       ctx.font = `900 ${fontSize}px Impact, "Arial Black", sans-serif`;
       ctx.fillStyle = textColor;
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = Math.max(3, Math.round(fontSize / 8));
+      ctx.lineWidth = Math.max(3, Math.round(fontSize / 7));
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
 
@@ -82,9 +88,9 @@ export const MemeGenerator: React.FC = () => {
         }
         if (currentLine) lines.push(currentLine);
 
-        const lineHeight = fontSize * 1.15;
+        const lineHeight = fontSize * 1.18;
         const startY = isBottom
-          ? canvas.height - (lines.length * lineHeight) - 16
+          ? canvas.height - (lines.length * lineHeight) - 18
           : yPos;
 
         lines.forEach((line, idx) => {
@@ -95,20 +101,59 @@ export const MemeGenerator: React.FC = () => {
       };
 
       if (topText) {
-        renderWrappedText(topText, 16, false);
+        renderWrappedText(topText, 18, false);
       }
 
       if (bottomText) {
         renderWrappedText(bottomText, 0, true);
       }
 
-      setDownloadUrl(canvas.toDataURL('image/jpeg', 0.92));
+      try {
+        setDownloadUrl(canvas.toDataURL('image/jpeg', 0.95));
+      } catch (e) {
+        console.error('Canvas export error:', e);
+      }
     };
+
+    if (customImgSrc) {
+      const img = new Image();
+      img.src = customImgSrc;
+      img.onload = () => {
+        canvas.width = 750;
+        canvas.height = Math.round((img.naturalHeight / img.naturalWidth) * 750);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        drawTextOverCanvas();
+      };
+    } else {
+      // Draw dynamic gradient backdrop template
+      canvas.width = 750;
+      canvas.height = 560;
+
+      const tmpl = POPULAR_TEMPLATES[selectedTemplateIndex] || POPULAR_TEMPLATES[0];
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, tmpl.color1);
+      grad.addColorStop(1, tmpl.color2);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Subtle decorative watermark badge
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, 180, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(tmpl.label, canvas.width / 2, canvas.height / 2);
+
+      drawTextOverCanvas();
+    }
   };
 
   useEffect(() => {
     renderMeme();
-  }, [imgSrc, topText, bottomText, fontSize, uppercase, textColor, strokeColor]);
+  }, [customImgSrc, selectedTemplateIndex, topText, bottomText, fontSize, uppercase, textColor, strokeColor]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -118,30 +163,39 @@ export const MemeGenerator: React.FC = () => {
         {/* Templates Picker */}
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
-            Choose Starter Template or Upload:
+            Choose Starter Background or Upload Image:
           </label>
-          <div className="grid grid-cols-4 gap-2">
-            {POPULAR_TEMPLATES.map((tmpl) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {POPULAR_TEMPLATES.map((tmpl, idx) => (
               <button
                 key={tmpl.name}
                 type="button"
-                onClick={() => setImgSrc(tmpl.url)}
-                className={`relative rounded-xl overflow-hidden aspect-video border-2 cursor-pointer transition-all ${
-                  imgSrc === tmpl.url ? 'border-indigo-600 ring-2 ring-indigo-500/20' : 'border-slate-200 dark:border-slate-700 opacity-70 hover:opacity-100'
+                onClick={() => {
+                  setCustomImgSrc(null);
+                  setSelectedTemplateIndex(idx);
+                }}
+                className={`p-3 rounded-2xl border-2 text-left cursor-pointer transition-all ${
+                  !customImgSrc && selectedTemplateIndex === idx
+                    ? 'border-indigo-600 ring-2 ring-indigo-500/20 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                 }`}
+                style={{
+                  background: `linear-gradient(135deg, ${tmpl.color1}, ${tmpl.color2})`,
+                }}
               >
-                <img src={tmpl.url} alt={tmpl.name} className="w-full h-full object-cover" />
+                <div className="text-xs font-bold text-white truncate">{tmpl.label}</div>
+                <div className="text-[10px] text-white/70 mt-0.5">{tmpl.name}</div>
               </button>
             ))}
           </div>
 
-          <div className="pt-1">
+          <div className="pt-2">
             <FileUploader
               accept="image/*"
               maxSizeMB={15}
               onFilesSelected={handleCustomUpload}
-              title="Upload your own image"
-              subtitle="Use any photo or screenshot from your device"
+              title="Or upload your own photo / screenshot"
+              subtitle="Drop any meme template or camera photo from your device"
             />
           </div>
         </div>

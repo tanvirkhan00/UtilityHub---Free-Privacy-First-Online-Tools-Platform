@@ -18,6 +18,9 @@ import { FormatConverter } from '../tools/image/FormatConverter';
 import { ImageToBase64 } from '../tools/image/ImageToBase64';
 import { ColorPickerTool } from '../tools/image/ColorPickerTool';
 import { BackgroundEraser } from '../tools/image/BackgroundEraser';
+import { ImageQualityImprover } from '../tools/image/ImageQualityImprover';
+import { ImageLinkGenerator } from '../tools/image/ImageLinkGenerator';
+import { TypingSpeedGame } from '../tools/game/TypingSpeedGame';
 import { QrCodeGenerator } from '../tools/creator/QrCodeGenerator';
 import { SocialMediaResizer } from '../tools/creator/SocialMediaResizer';
 import { MemeGenerator } from '../tools/creator/MemeGenerator';
@@ -90,10 +93,20 @@ export const ToolPage: React.FC = () => {
         return <ImageToBase64 />;
       case 'color-picker':
         return <ColorPickerTool />;
+      case 'background-remover':
       case 'background-eraser':
         return <BackgroundEraser />;
+      case 'image-quality-improver':
+        return <ImageQualityImprover />;
+      case 'image-to-public-link-generator':
+      case 'image-link-generator':
+        return <ImageLinkGenerator />;
+      case 'typing-speed-game':
+      case 'typing-test':
+        return <TypingSpeedGame />;
       case 'qr-code-generator':
         return <QrCodeGenerator />;
+      case 'social-resizer':
       case 'social-media-resizer':
         return <SocialMediaResizer />;
       case 'meme-generator':
@@ -106,6 +119,7 @@ export const ToolPage: React.FC = () => {
         return <FaviconGenerator />;
       case 'word-counter':
         return <WordCounter />;
+      case 'markdown-previewer':
       case 'markdown-preview':
         return <MarkdownPreviewer />;
       case 'json-formatter':

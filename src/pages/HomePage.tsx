@@ -14,7 +14,10 @@ import {
   FileText,
   Image as ImageIcon,
   Palette,
-  Code
+  Code,
+  Gamepad2,
+  Trophy,
+  Keyboard
 } from 'lucide-react';
 import { TOOLS_CATALOG, getToolsByCategory, searchTools } from '../data/toolsData';
 import { CATEGORIES } from '../data/categoriesData';
@@ -104,6 +107,61 @@ export const HomePage: React.FC = () => {
             </span>
           </div>
 
+        </div>
+      </section>
+
+      {/* Highlighted Feature Banner: TypeRush Typing Speed Game */}
+      <section className="max-w-5xl mx-auto">
+        <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white overflow-hidden shadow-2xl border-2 border-amber-500/50 group hover:border-amber-400 transition-all">
+          {/* Animated decorative glow */}
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-amber-500/20 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+          <div className="absolute bottom-0 left-1/3 -mb-10 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            <div className="lg:col-span-8 space-y-3.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-rose-500/20 border border-amber-400/40 text-amber-300 text-xs font-black uppercase tracking-wider shadow-xs">
+                <Gamepad2 className="w-4 h-4 text-amber-400 animate-bounce" />
+                <span>Featured Interactive Game • Boost Your WPM Speed</span>~
+              </div>
+
+              <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+                TypeRush: Keyboard Typing Speed Practice Game
+              </h2>
+
+              <p className="text-xs sm:text-sm text-indigo-200/90 leading-relaxed max-w-xl">
+                Practice touch typing through interactive gameplay! Featuring Arcade Falling Words defense, 15s/30s/60s Speed Sprints, Developer Code Ninja mode, and real-time mechanical keyboard sound effects.
+              </p>
+
+              {/* Game highlights */}
+              <div className="flex flex-wrap gap-2 pt-1 text-[11px] font-bold text-indigo-100">
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5 text-amber-400" /> Arcade Word Rain
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-rose-400" /> Speed Sprint (15s/30s/60s)
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
+                  <Code className="w-3.5 h-3.5 text-sky-400" /> Developer Code Typer
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
+                  <Keyboard className="w-3.5 h-3.5 text-emerald-400" /> Mechanical Click Audio
+                </span>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col items-center lg:items-end justify-center gap-3">
+              <Link
+                to="/tool/typing-speed-game"
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-rose-500 text-slate-950 font-black text-sm hover:scale-105 transition-all shadow-xl shadow-amber-500/25 inline-flex items-center justify-center gap-2.5 group cursor-pointer"
+              >
+                <span>Play Typing Game Now</span>
+                <ArrowRight className="w-4 h-4 text-slate-950 group-hover:translate-x-1.5 transition-transform" />
+              </Link>
+              <div className="text-[11px] font-mono text-indigo-300/80 flex items-center gap-1">
+                <Trophy className="w-3.5 h-3.5 text-amber-400" /> Rank from Turtle to Typing God
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

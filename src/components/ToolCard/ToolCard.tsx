@@ -26,6 +26,11 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {tool.badge === 'Featured Game' && (
+              <span className="px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-xs animate-pulse">
+                Game 🎮
+              </span>
+            )}
             {tool.badge === 'Signature' && (
               <span className="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 Signature

@@ -18,7 +18,7 @@ export interface ToolMeta {
   longDescription?: string;
   category: ToolCategory;
   iconName: string;
-  badge?: 'Popular' | 'New' | 'Signature' | 'Updated';
+  badge?: 'Popular' | 'New' | 'Signature' | 'Updated' | 'Featured Game';
   keywords: string[];
   features?: string[];
   instructions?: { step: number; title: string; desc: string }[];

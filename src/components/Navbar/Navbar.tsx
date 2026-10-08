@@ -11,7 +11,8 @@ import {
   ChevronDown,
   Sparkles,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Gamepad2
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { CATEGORIES } from '../../data/categoriesData';
@@ -130,6 +131,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenCommand }) =
                   Hot
                 </span>
               </Link>
+
+              {/* Highlighted Typing Game Link */}
+              <Link
+                to="/tool/typing-speed-game"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold transition-all ${
+                  isActive('/tool/typing-speed-game')
+                    ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/60 ring-1 ring-amber-400/60'
+                    : 'text-amber-600 dark:text-amber-400 hover:bg-amber-50/60 dark:hover:bg-amber-950/40'
+                }`}
+              >
+                <Gamepad2 className="w-4 h-4 text-amber-500" />
+                <span>Typing Game</span>
+                <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600 text-white rounded-full animate-pulse shadow-xs">
+                  Play 🎮
+                </span>
+              </Link>
             </nav>
           </div>
 
@@ -225,6 +242,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch, onOpenCommand }) =
             </span>
             <span className="text-xs bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100 px-2 py-0.5 rounded font-semibold">
               Signature
+            </span>
+          </Link>
+
+          <Link
+            to="/tool/typing-speed-game"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-base font-bold text-amber-500 bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 border border-amber-500/30"
+          >
+            <span className="flex items-center gap-2">
+              <Gamepad2 className="w-5 h-5 text-amber-500" />
+              TypeRush: Speed Game
+            </span>
+            <span className="text-xs bg-gradient-to-r from-amber-500 to-rose-500 text-white px-2 py-0.5 rounded-full font-extrabold uppercase animate-pulse">
+              Play 🎮
             </span>
           </Link>
 

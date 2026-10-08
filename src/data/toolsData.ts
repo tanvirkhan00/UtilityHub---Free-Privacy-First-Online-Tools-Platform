@@ -369,8 +369,97 @@ export const TOOLS: ToolMeta[] = [
     ],
     clientSideOnly: true
   },
+  {
+    id: 'image-quality-improver',
+    name: 'Image Quality Improver & Upscaler',
+    slug: 'image-quality-improver',
+    category: 'image',
+    iconName: 'Sparkles',
+    badge: 'Popular',
+    description: 'Enhance photo sharpness, unblur soft edges, boost vibrancy, and upscale to 2x/4x HD resolution.',
+    longDescription: 'Restore blurry photos, improve micro-contrast, sharpen soft edges, and upscale images up to 2x and 4x using in-browser unsharp convolution kernels, adaptive histogram equalization, and interactive before/after split comparison slider.',
+    keywords: ['image quality improver', 'unblur image', 'photo enhancer', 'super resolution', 'sharpen image', 'hd upscale'],
+    features: [
+      'Unsharp mask convolution to recover blurry details and crisp edges',
+      '2x HD and 4x Ultra HD bicubic super-resolution upscaling',
+      'Interactive Before/After split comparison drag slider',
+      '5 one-click presets: Smart Auto, Unblur, 2x HD, Vibrant Pop, and Low-Light Shadow Fix',
+      'Granular controls for sharpness, clarity, dynamic contrast, and color saturation',
+      '100% private in-browser GPU & Canvas hardware accelerated processing'
+    ],
+    instructions: [
+      { step: 1, title: 'Upload your image', desc: 'Drop any blurry, soft, or low-resolution photo (JPG, PNG, WEBP).' },
+      { step: 2, title: 'Select preset or tweak sliders', desc: 'Choose "Smart Auto Enhance" or slide sharpness, clarity, and 2x HD upscale.' },
+      { step: 3, title: 'Compare difference', desc: 'Drag the interactive split slider left and right to inspect the dramatic improvement.' },
+      { step: 4, title: 'Download HD photo', desc: 'Download your enhanced high-definition image instantly.' }
+    ],
+    faqs: [
+      { question: 'Does it upload my photos to any AI cloud servers?', answer: 'No! All convolution filtering, edge enhancement, and HD upscaling execute 100% client-side in your browser memory.' },
+      { question: 'Can this fix out-of-focus camera pictures?', answer: 'Yes. The high-pass unsharp mask algorithm amplifies high-frequency edge gradients to bring back sharpness.' }
+    ],
+    clientSideOnly: true
+  },
+  {
+    id: 'image-to-public-link-generator',
+    name: 'Image to Public Link Generator',
+    slug: 'image-to-public-link-generator',
+    category: 'image',
+    iconName: 'Link2',
+    badge: 'New',
+    description: 'Upload any image to generate instant shareable public URLs, direct CDN links, HTML embed tags, and mobile QR codes.',
+    longDescription: 'Turn any picture from your device into an instantly accessible public web link. Generates direct CDN image links for hotlinking, markdown tags for GitHub & Notion, HTML embed snippets for websites, BBCode for forums, and on-screen QR codes for smartphone scanning.',
+    keywords: ['image to link', 'image url generator', 'upload image get link', 'image hosting free', 'image to qr code', 'shareable image link'],
+    features: [
+      'Generates instant Direct Image URLs (HTTPS) for fast hotlinking and sharing',
+      'One-click Markdown (`![alt](url)`) and HTML (`<img src="..." />`) embed snippets',
+      'Instant smartphone QR Code generated directly on-screen for mobile camera scanning',
+      'BBCode tags ready for forums and online message boards',
+      'Supports JPG, PNG, WEBP, GIF, and SVG files',
+      'Zero account creation or login required'
+    ],
+    instructions: [
+      { step: 1, title: 'Upload image', desc: 'Select or drop any photo, screenshot, logo, or diagram from your device.' },
+      { step: 2, title: 'Instant link generation', desc: 'The tool allocates a public URL and prepares embed tags and QR codes.' },
+      { step: 3, title: 'Copy or scan', desc: 'Click "Copy Direct Link" or scan the QR code from your phone to share anywhere.' }
+    ],
+    faqs: [
+      { question: 'Do I need an account or API key?', answer: 'No. The link generator works immediately with zero signup, credit card, or API key configuration.' },
+      { question: 'Where can I paste the generated links?', answer: 'Everywhere: GitHub, Discord, Notion, Slack, forums, email newsletters, and HTML websites.' }
+    ],
+    clientSideOnly: true
+  },
 
   // Creator & Social Media Tools
+  {
+    id: 'typing-speed-game',
+    name: 'TypeRush: Typing Speed Practice Game',
+    slug: 'typing-speed-game',
+    category: 'creator',
+    iconName: 'Gamepad2',
+    badge: 'Featured Game',
+    description: 'Level up your keyboard WPM speed through interactive arcade games, speed sprints, and code typing battles.',
+    longDescription: 'A gamified typing velocity trainer featuring Arcade Falling Words defense, 15s/30s/60s Speed Sprints, Developer Code syntax challenges, real-time WPM & accuracy meters, synthetic mechanical keyboard click audio, and on-screen keyboard visualizers.',
+    keywords: ['typing speed game', 'keyboard practice', 'type racer', 'monkeytype clone', 'wpm test game', 'typing speed test', 'typing practice online', 'code typing test'],
+    features: [
+      'Arcade Falling Words mode: defend against raining words with combo streaks and 3 lives',
+      'Speed Sprint test with custom 15s, 30s, and 60s bursts and live WPM/Accuracy readouts',
+      'Code Ninja mode: train typing muscle memory on real JavaScript, Python, and React code syntax',
+      'Synthesized mechanical keyboard switch audio clicks with zero latency (Web Audio API)',
+      'On-screen QWERTY mechanical keyboard visualizer with active and target key indicators',
+      'Performance rank tiers (Novice Turtle to Typing God) with personal best high score saving'
+    ],
+    instructions: [
+      { step: 1, title: 'Choose game mode', desc: 'Select Speed Sprint, Arcade Falling Words, or Code Ninja mode.' },
+      { step: 2, title: 'Start typing', desc: 'Focus on the prompt words and type with rhythm and accuracy.' },
+      { step: 3, title: 'Earn streaks and badges', desc: 'Chain accurate words together for combo bonuses and level up your WPM rank.' },
+      { step: 4, title: 'Check stats & share', desc: 'Inspect your Net WPM, accuracy, and copy your verified score card.' }
+    ],
+    faqs: [
+      { question: 'What is a good typing speed (WPM)?', answer: 'The average typing speed is around 40 WPM. Professional developers and typists often reach 70-90+ WPM. With consistent practice on TypeRush, you can increase your speed by 20-30 WPM within two weeks!' },
+      { question: 'Does the game work offline?', answer: 'Yes! All word banks, timer algorithms, and sound generators run 100% locally in your browser memory.' }
+    ],
+    clientSideOnly: true
+  },
   {
     id: 'qr-code-generator',
     name: 'QR Code Generator',
